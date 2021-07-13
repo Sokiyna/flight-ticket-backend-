@@ -30,14 +30,37 @@ io.on('connection', (socket) => {
       .in(staffRoom)
       .emit('newTicket', { ...payload, id: uuidv4(), socketId: socket.id });
   });
+  //sendmsg
+  socket.on('sendmsg', (payload) => {
 
-  socket.on('claim', (payload) => {
-    // when a TA claim the ticket we need to notify the student
+    socket
+      .in(staffRoom)
+      .emit('sentMsg', {msg:payload.msg,time:payload.created_at, id: uuidv4(), socketId: socket.id ,userName:payload.userName});
+  });
+
+socket.on('replay', (payload) => {
+
+  socket
+    .to(payload.id)
+    .emit('replaymsg', {msg:payload.msg,time:payload.created_at});
+});
+  socket.on('handle', (payload) => {
+
+    // console.log(payload.flag)
+    if(payload.flag==true)
+    {
     socket.to(payload.studentId).emit('claimed', { name: payload.name,
-        randomNum : faker.date.future()
-    
+        randomNum : faker.date.future().toLocaleDateString(),
+    txt:"Your jorney has been accepted it will be in"
     });
-
+  }
+  else
+  {
+    socket.to(payload.studentId).emit('claimed', { name: payload.name,
+      randomNum : '',
+  txt:"Sorry Your jorney hasn't been accepted" 
+  });
+  }
   
   });
   socket.on('disconnect', () => {
