@@ -8,7 +8,7 @@ const io = require('socket.io')(http);
 const adminroom = 'adminroom';
 const { v4: uuidv4 } = require('uuid');
 const faker = require('faker');
-
+let username=""
 io.listen(server);
 
 app.use(cors());
@@ -29,32 +29,28 @@ io.on('connection', (socket) => {
   });
   socket.on('sendmsg', (payload) => {
     // console.log("test"+JSON.stringify(payload))
+    username=payload.userName
+    console.log(payload)
     socket
     .in(adminroom)
 .emit('sentMsg', { ...payload, id: uuidv4(), socketId:socket.id});
 // console.log(payload)
   });
-  //sendmsg
 
-// socket.on('replay', (payload) => {
-
-//   socket
-//     .to(payload.id)
-//     .emit('replaymsg', {msg:payload.msg,time:payload.created_at});
-// });
   socket.on('handle', (payload) => {
     // console.log(payload.flag)
     if(payload.flag==true)
     {
-    socket.to(payload.studentId).emit('claimed', { name: payload.name,
+    socket.to(payload.studentId).emit('results', { name: payload.name,
+      flag2 :true ,
         randomNum : faker.date.future().toLocaleDateString(),
     txt:"Your jorney has been accepted it will be in"
     });
   }
   else
   {
-    socket.to(payload.studentId).emit('claimed', { name: payload.name,
-      randomNum : '',
+    socket.to(payload.studentId).emit('results', { name: payload.name,
+      flag2 :false ,
   txt:"Sorry Your jorney hasn't been accepted" 
   });
   }
@@ -63,13 +59,15 @@ io.on('connection', (socket) => {
 
   socket.on('replayTo', (payload) => {
 
-//  socket.to(payload.studentId).emit('claimed', { name: payload.name,
+//  socket.to(payload.studentId).emit('results', { name: payload.name,
 //       randomNum : '',
 //   txt:"Sorry Your jorney hasn't been accepted" 
 //   });
 //   }
-    socket.broadcast.emit('replaiedtoUsers', payload);
 
+console.log(payload)
+    socket.broadcast.emit('replaiedtoUsers', payload,username);
+//payload.userId
   });
 
 
